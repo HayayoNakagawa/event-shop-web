@@ -1,0 +1,359 @@
+/* ==============================
+   全体
+============================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Helvetica Neue",
+        "Hiragino Kaku Gothic ProN",
+        "Yu Gothic",
+        sans-serif;
+
+    background: #f4f5f7;
+    color: #222;
+}
+
+
+/* ==============================
+   ヘッダー
+============================== */
+
+header {
+    background: linear-gradient(135deg, #222, #444);
+    color: white;
+
+    padding: 28px 20px;
+
+    text-align: center;
+
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+
+    position: relative;
+}
+
+header h1 {
+    margin: 0 0 18px;
+
+    font-size: 30px;
+    letter-spacing: 2px;
+}
+
+
+/* ==============================
+   カートボタン
+============================== */
+
+#cart-button {
+    padding: 12px 24px;
+
+    border: none;
+    border-radius: 30px;
+
+    background: #007aff;
+    color: white;
+
+    font-size: 16px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+#cart-button:hover {
+    background: #0066d6;
+    transform: translateY(-1px);
+}
+
+#cart-button:active {
+    transform: scale(0.97);
+}
+
+
+/* ==============================
+   メイン
+============================== */
+
+main {
+    max-width: 700px;
+
+    margin: 35px auto;
+
+    padding: 0 20px 50px;
+}
+
+main h2 {
+    margin-bottom: 25px;
+
+    font-size: 25px;
+}
+
+
+/* ==============================
+   商品一覧
+============================== */
+
+#product-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 18px;
+}
+
+
+/* ==============================
+   商品カード
+============================== */
+
+.product {
+    background: white;
+
+    padding: 22px;
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.08);
+
+    border: 1px solid #e5e5e5;
+
+    transition: 0.2s;
+}
+
+.product:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.product h3 {
+    margin: 0 0 10px;
+
+    font-size: 20px;
+}
+
+
+/* ==============================
+   価格
+============================== */
+
+.price {
+    margin: 8px 0;
+
+    font-size: 22px;
+
+    font-weight: bold;
+
+    color: #111;
+}
+
+
+/* ==============================
+   在庫
+============================== */
+
+.product p:not(.price) {
+    margin: 8px 0 18px;
+
+    color: #777;
+
+    font-size: 14px;
+}
+
+
+/* ==============================
+   商品のボタン
+============================== */
+
+.product button {
+    width: 100%;
+
+    padding: 13px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: #007aff;
+
+    color: white;
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.product button:hover {
+    background: #0066d6;
+}
+
+.product button:active {
+    transform: scale(0.98);
+}
+
+
+/* ==============================
+   カート画面
+============================== */
+
+.cart-item {
+    background: white;
+
+    padding: 20px;
+
+    margin-bottom: 15px;
+
+    border-radius: 14px;
+
+    border: 1px solid #e5e5e5;
+
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.07);
+}
+
+.cart-item h3 {
+    margin-top: 0;
+}
+
+
+/* ==============================
+   個数変更
+============================== */
+
+.quantity-control {
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin: 15px 0;
+}
+
+.quantity-control button {
+    width: 40px;
+    height: 40px;
+
+    padding: 0;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: #e9e9e9;
+
+    color: #222;
+
+    font-size: 20px;
+
+    cursor: pointer;
+}
+
+.quantity-control button:hover {
+    background: #d5d5d5;
+}
+
+.quantity {
+    min-width: 30px;
+
+    text-align: center;
+
+    font-size: 18px;
+
+    font-weight: bold;
+}
+
+
+/* ==============================
+   削除ボタン
+============================== */
+
+.remove-button {
+    padding: 8px 15px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #ff3b30;
+
+    color: white;
+
+    cursor: pointer;
+}
+
+.remove-button:hover {
+    background: #d92f27;
+}
+
+
+/* ==============================
+   戻るボタン
+============================== */
+
+#back-button {
+    width: 100%;
+
+    margin-top: 20px;
+
+    padding: 14px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: #555;
+
+    color: white;
+
+    font-size: 16px;
+
+    cursor: pointer;
+}
+
+#back-button:hover {
+    background: #333;
+}
+
+
+/* ==============================
+   スマートフォン対応
+============================== */
+
+@media (max-width: 600px) {
+
+    header {
+        padding: 22px 15px;
+    }
+
+    header h1 {
+        font-size: 25px;
+    }
+
+    main {
+        margin-top: 25px;
+
+        padding: 0 15px 40px;
+    }
+
+    main h2 {
+        font-size: 22px;
+    }
+
+    .product {
+        padding: 18px;
+    }
+}

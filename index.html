@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>イベント物販</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>イベント物販</h1>
+        <button id="cart-button">
+            🛒 カート（0）
+        </button>
+    </header>
+
+    <main>
+        <h2>商品一覧</h2>
+
+        <div id="product-list">
+            <!-- 商品がここに表示される -->
+        </div>
+    </main>
+
+
+        <!-- Firebase -->
+    <script type="module">
+
+        import { initializeApp }
+        from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+
+        import {
+            getFirestore,
+            collection,
+            getDocs,
+            doc,
+            setDoc
+        }
+        from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyDvTQmCSQQM-oPSlGOj2iazZjCLPAbN9Cw",
+            authDomain: "good-pass-18bd3.firebaseapp.com",
+            projectId: "good-pass-18bd3",
+            storageBucket: "good-pass-18bd3.firebasestorage.app",
+            messagingSenderId: "1493512382",
+            appId: "1:1493512382:web:e037ca8ccbc59b9e436eef",
+            measurementId: "G-3J4NTKLF9Q"
+        };
+
+        const app = initializeApp(firebaseConfig);
+
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.doc = doc;
+        window.setDoc = setDoc;
+
+    </script>
+
+    <!-- 自分のJavaScript -->
+    <script type="module" src="app.js"></script>
+
+</body>
+</html>
