@@ -373,7 +373,9 @@ function showCart() {
     // ==============================
     
     const checkoutButton = document.createElement("button");
+    checkoutButton.id = "checkout-button";
     checkoutButton.textContent = "お会計へ";
+    
     checkoutButton.addEventListener("click", () => {
         showCheckout();
     });
