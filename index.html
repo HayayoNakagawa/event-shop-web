@@ -38,7 +38,9 @@
             collection,
             getDocs,
             doc,
-            setDoc
+            setDoc,
+            updateDoc,
+            runTransaction
         }
         from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
         
@@ -61,6 +63,8 @@
         window.getDocs = getDocs;
         window.doc = doc;
         window.setDoc = setDoc;
+        window.updateDoc = updateDoc;
+        window.runTransaction = runTransaction;
 
     </script>
 

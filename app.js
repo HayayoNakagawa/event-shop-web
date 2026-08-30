@@ -507,15 +507,142 @@ function showCheckout() {
     // ==============================
     // 注文確定
     // ==============================
+    
+    async function confirmOrder() {
+        if (cart.length === 0) {
+            alert("カートが空です。");
+            return;
+        }
+        // 受付番号を発行
+        
+        const receptionNumber =
+        "A-" +
+        String(Math.floor(Math.random() * 9999) + 1)
+        .padStart(4, "0");
+        
+        // 合計金額
+        const totalPrice = cart.reduce(
+            (total, item) =>
+                total + item.price * item.quantity,
+            0
+        );
+        // Firestoreに保存する商品データ
+        const itemsData = cart.map(item => ({
+            productID: item.id,
+            productName: item.name,
+            price: item.price,
+            quantity: item.quantity
+        }));
+        
+        // 注文データ
+        const orderData = {
+            receptionNumber: receptionNumber,
+            items: itemsData,
+            totalPrice: totalPrice,
+            
+            // Web版ではまだ会計していない
+            paymentMethod: "未選択",
+            isPaid: false,
+            createdAt: new Date()
+        };
+        try {
 
-    document
-        .getElementById("confirm-button")
-        .addEventListener("click", () => {
+        // ==============================
+        // 在庫を減らして注文を保存
+        // ==============================
 
-            confirmOrder();
+        await window.runTransaction(
+            window.db,
+            async (transaction) => {
 
-        });
+                // カート内の商品を1つずつ処理
+                for (const item of cart) {
 
+                    // productsのドキュメント
+                    // IDがproductIDと同じ場合
+                    const productRef = window.doc(
+                        window.db,
+                        "products",
+                        item.id
+                    );
+
+                    // 最新の商品情報を取得
+                    const productSnapshot =
+                        await transaction.get(productRef);
+
+                    if (!productSnapshot.exists()) {
+
+                        throw new Error(
+                            `${item.name}の商品情報が見つかりません。`
+                        );
+                    }
+
+                    const productData =
+                        productSnapshot.data();
+
+                    // 最新在庫
+                    const currentStock =
+                        productData.stock;
+
+                    // 在庫チェック
+                    if (currentStock < item.quantity) {
+
+                        throw new Error(
+                            `${item.name}の在庫が不足しています。`
+                        );
+                    }
+
+                    // 在庫を減らす
+                    transaction.update(
+                        productRef,
+                        {
+                            stock:
+                                currentStock - item.quantity
+                        }
+                    );
+                }
+
+                // 注文を保存
+                const orderRef = window.doc(
+                    window.db,
+                    "orders",
+                    receptionNumber
+                );
+
+                transaction.set(
+                    orderRef,
+                    orderData
+                );
+            }
+        );
+
+        // ==============================
+        // 完了画面を表示
+        // ==============================
+
+        showOrderComplete(
+            receptionNumber,
+            totalPrice
+        );
+
+        // カートを空にする
+        cart = [];
+
+        updateCartButton();
+
+    } catch (error) {
+
+        console.error(
+            "注文保存エラー:",
+            error
+        );
+
+        alert(
+            "注文の確定に失敗しました。\n\n" +
+            error.message
+        );
+    }
+}
 
     // ==============================
     // カートに戻る
