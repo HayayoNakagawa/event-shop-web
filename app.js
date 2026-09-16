@@ -683,7 +683,113 @@ async function confirmOrder() {
     try {
 
         // ==============================
-        // Firestoreに注文を保存
+        // ① Firestoreから最新の商品情報を取得
+        // ==============================
+
+        const productSnapshot =
+            await window.getDocs(
+                window.collection(
+                    window.db,
+                    "products"
+                )
+            );
+
+
+        // ==============================
+        // ② 在庫を確認
+        // ==============================
+
+        for (const item of cart) {
+
+            let productFound = false;
+
+            productSnapshot.forEach(productDoc => {
+
+                const product =
+                    productDoc.data();
+
+
+                if (
+                    product.productID === item.id
+                ) {
+
+                    productFound = true;
+
+
+                    // 在庫が足りない場合
+                    if (
+                        product.stock < item.quantity
+                    ) {
+
+                        throw new Error(
+                            `${item.name}の在庫が不足しています。\n` +
+                            `現在の在庫：${product.stock}個\n` +
+                            `購入数量：${item.quantity}個`
+                        );
+
+                    }
+
+                }
+
+            });
+
+
+            // 商品が見つからない場合
+            if (!productFound) {
+
+                throw new Error(
+                    `${item.name}の商品が見つかりません。`
+                );
+
+            }
+
+        }
+
+
+        // ==============================
+// ③ 在庫を減らす
+// ==============================
+
+for (const item of cart) {
+
+    for (const productDoc of productSnapshot.docs) {
+
+        const product =
+            productDoc.data();
+
+        if (
+            product.productID === item.id
+        ) {
+
+            const newStock =
+                product.stock -
+                item.quantity;
+
+            console.log(
+                `${item.name}：` +
+                `${product.stock} → ${newStock}`
+            );
+
+            await window.updateDoc(
+                window.doc(
+                    window.db,
+                    "products",
+                    productDoc.id
+                ),
+                {
+                    stock: newStock
+                }
+            );
+
+        }
+
+    }
+
+}
+
+
+        // ==============================
+        // ④ 注文をFirestoreに保存
         // ==============================
 
         await window.setDoc(
