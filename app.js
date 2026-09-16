@@ -604,6 +604,25 @@ async function confirmOrder() {
 
 
     // ==============================
+    // 注文確定ボタンを無効化
+    // ==============================
+
+    const confirmButton =
+        document.getElementById(
+            "confirm-button"
+        );
+
+    if (confirmButton) {
+
+        confirmButton.disabled = true;
+
+        confirmButton.textContent =
+            "注文処理中...";
+
+    }
+
+
+    // ==============================
     // 受付番号を発行
     // ==============================
 
@@ -683,7 +702,7 @@ async function confirmOrder() {
     try {
 
         // ==============================
-        // ① Firestoreから最新の商品情報を取得
+        // ① Firestoreから商品情報を取得
         // ==============================
 
         const productSnapshot =
@@ -696,14 +715,22 @@ async function confirmOrder() {
 
 
         // ==============================
-        // ② 在庫を確認
+        // ② カートの商品に対応する
+        //    Firestoreの商品を探す
         // ==============================
+
+        const productRefs = [];
+
 
         for (const item of cart) {
 
             let productFound = false;
 
-            productSnapshot.forEach(productDoc => {
+
+            for (
+                const productDoc
+                of productSnapshot.docs
+            ) {
 
                 const product =
                     productDoc.data();
@@ -716,22 +743,26 @@ async function confirmOrder() {
                     productFound = true;
 
 
-                    // 在庫が足りない場合
-                    if (
-                        product.stock < item.quantity
-                    ) {
+                    productRefs.push({
 
-                        throw new Error(
-                            `${item.name}の在庫が不足しています。\n` +
-                            `現在の在庫：${product.stock}個\n` +
-                            `購入数量：${item.quantity}個`
-                        );
+                        ref:
+                            window.doc(
+                                window.db,
+                                "products",
+                                productDoc.id
+                            ),
 
-                    }
+                        item:
+                            item
+
+                    });
+
+
+                    break;
 
                 }
 
-            });
+            }
 
 
             // 商品が見つからない場合
@@ -747,60 +778,147 @@ async function confirmOrder() {
 
 
         // ==============================
-// ③ 在庫を減らす
-// ==============================
+        // ③ トランザクション開始
+        // ==============================
 
-for (const item of cart) {
+        await window.runTransaction(
 
-    for (const productDoc of productSnapshot.docs) {
+            window.db,
 
-        const product =
-            productDoc.data();
+            async (transaction) => {
 
-        if (
-            product.productID === item.id
-        ) {
+                // ==============================
+                // まず全商品の最新在庫を取得
+                // ==============================
 
-            const newStock =
-                product.stock -
-                item.quantity;
+                const latestProducts = [];
 
-            console.log(
-                `${item.name}：` +
-                `${product.stock} → ${newStock}`
-            );
 
-            await window.updateDoc(
-                window.doc(
-                    window.db,
-                    "products",
-                    productDoc.id
-                ),
-                {
-                    stock: newStock
+                for (
+                    const productInfo
+                    of productRefs
+                ) {
+
+                    const productDoc =
+                        await transaction.get(
+                            productInfo.ref
+                        );
+
+
+                    if (
+                        !productDoc.exists()
+                    ) {
+
+                        throw new Error(
+                            `${productInfo.item.name}の商品が見つかりません。`
+                        );
+
+                    }
+
+
+                    latestProducts.push({
+
+                        document:
+                            productDoc,
+
+                        item:
+                            productInfo.item,
+
+                        ref:
+                            productInfo.ref
+
+                    });
+
                 }
-            );
-
-        }
-
-    }
-
-}
 
 
-        // ==============================
-        // ④ 注文をFirestoreに保存
-        // ==============================
+                // ==============================
+                // 在庫を確認
+                // ==============================
 
-        await window.setDoc(
+                for (
+                    const productInfo
+                    of latestProducts
+                ) {
 
-            window.doc(
-                window.db,
-                "orders",
-                receptionNumber
-            ),
+                    const currentStock =
+                        productInfo.document.data().stock;
 
-            orderData
+
+                    // 在庫不足
+                    if (
+                        currentStock <
+                        productInfo.item.quantity
+                    ) {
+
+                        throw new Error(
+                            `${productInfo.item.name}の在庫が不足しています。\n` +
+                            `現在の在庫：${currentStock}個\n` +
+                            `購入数量：${productInfo.item.quantity}個`
+                        );
+
+                    }
+
+                }
+
+
+                // ==============================
+                // 在庫を減らす
+                // ==============================
+
+                for (
+                    const productInfo
+                    of latestProducts
+                ) {
+
+                    const currentStock =
+                        productInfo.document.data().stock;
+
+
+                    const newStock =
+                        currentStock -
+                        productInfo.item.quantity;
+
+
+                    console.log(
+                        `${productInfo.item.name}：` +
+                        `${currentStock} → ${newStock}`
+                    );
+
+
+                    // Firestoreの在庫を更新
+                    transaction.update(
+
+                        productInfo.ref,
+
+                        {
+                            stock:
+                                newStock
+                        }
+
+                    );
+
+                }
+
+
+                // ==============================
+                // 注文を保存
+                // ==============================
+
+                const orderRef =
+                    window.doc(
+                        window.db,
+                        "orders",
+                        receptionNumber
+                    );
+
+
+                transaction.set(
+                    orderRef,
+                    orderData
+                );
+
+            }
 
         );
 
@@ -828,7 +946,7 @@ for (const item of cart) {
     } catch (error) {
 
         console.error(
-            "注文保存エラー:",
+            "注文処理エラー:",
             error
         );
 
@@ -837,6 +955,20 @@ for (const item of cart) {
             "注文の確定に失敗しました。\n\n" +
             error.message
         );
+
+
+        // ==============================
+        // ボタンを元に戻す
+        // ==============================
+
+        if (confirmButton) {
+
+            confirmButton.disabled = false;
+
+            confirmButton.textContent =
+                "注文を確定する";
+
+        }
 
     }
 
